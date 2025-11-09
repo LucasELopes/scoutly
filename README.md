@@ -1,4 +1,4 @@
-# 💰 PreçoRadar
+# 💰 Scoutly
 
 **Scoutly** é um micro SaaS desenvolvido para monitorar automaticamente preços de concorrentes em e-commerces.  
 O sistema coleta periodicamente os valores de produtos cadastrados, armazena o histórico de preços e envia alertas sempre que há variação significativa.
