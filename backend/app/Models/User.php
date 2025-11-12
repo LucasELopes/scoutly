@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Storage;
 
 class User extends Authenticatable
 {
@@ -56,5 +57,19 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    protected static function booted()
+    {
+        self::deleted(function (User $user) {
+            try {
+                if($user['image']) {
+                    $image_name = explode('image/', $user['image']);
+                    Storage::disk('public')->delete('image/'.$image_name[1]);
+                }
+            } catch (Throwable) {
+            }
+        });
+
     }
 }
