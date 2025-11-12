@@ -26,7 +26,8 @@ class User extends Authenticatable
         'name',
         'email',
         'role',
-        'password'
+        'password',
+        'image'
     ];
 
     public static function getRoles(): array {

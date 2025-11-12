@@ -73,6 +73,6 @@ class SubscriptionController extends Controller
         $subscription = $this->subscription->findOrFail($id);
         $subscription->delete();
 
-        return response()->json(['message' => 'Assinatura cancelada com sucesso', 'subscription' => $subscription], Response::HTTP_NO_CONTENT);
+        return response()->json(['message' => 'Assinatura cancelada com sucesso', 'subscription' => $subscription], Response::HTTP_OK);
     }
 }
