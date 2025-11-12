@@ -14,6 +14,8 @@ class User extends Authenticatable
     /** @use HasFactory<\Database\Factories\UserFactory> */
      use HasFactory, Notifiable, HasApiTokens, HasUuids;
 
+     public const USER_DEFAULT = 'user';
+     public const USER_ADMIN = 'admin';
     /**
      * The attributes that are mass assignable.
      *
@@ -22,8 +24,16 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
-        'password',
+        'role',
+        'password'
     ];
+
+    public static function getRoles(): array {
+        return [
+            self::USER_DEFAULT,
+            self::USER_ADMIN
+        ];
+    }
 
     /**
      * The attributes that should be hidden for serialization.
