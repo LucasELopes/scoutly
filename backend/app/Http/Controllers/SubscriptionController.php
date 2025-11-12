@@ -28,6 +28,7 @@ class SubscriptionController extends Controller
         ->when($request->has('plan'), fn ($query) => $query->orWhere('plan', 'like', "%{$request['plan']}%"))
         ->when($request->has('active_until'), fn ($query) => $query->orWhere('active_until', 'like', "%{$request['active_until']}%"))
         ->orderBy('created_at', 'desc')
+        ->with('user')
         ->paginate((int) $request->per_page);
 
         return response()->json($subscription, Response::HTTP_OK);

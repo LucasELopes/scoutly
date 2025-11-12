@@ -14,7 +14,7 @@ return new class extends Migration
     {
         Schema::create('subscriptions', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('user_id')->references('id')->on('users');
+            $table->foreignUuid('user_id')->unique()->references('id')->on('users');
             $table->enum('plan', Subscription::getPlans())->default(Subscription::PLAN_FREE);
             $table->timestamp('active_until');
             $table->timestamps();
