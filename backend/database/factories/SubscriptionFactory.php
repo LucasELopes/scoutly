@@ -19,10 +19,7 @@ class SubscriptionFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => User::inRandomOrder()
-                ->whereNotIn('id', Subscription::pluck('user_id'))
-                ->first()
-                ?->id ?? User::factory(), // cria um novo user se todos já tiverem subscription
+            'user_id' => User::all()->random()->id,
             'plan' => $this->faker->randomElement(Subscription::getPlans()),
             'active_until' => now()->addMonth(),
         ];
