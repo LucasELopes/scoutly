@@ -41,7 +41,7 @@ class SubscriptionController extends Controller
         $data = $request->validated();
         $subscription = $this->subscription->create($data);
 
-        return response()->json($subscription, Response::HTTP_OK);
+        return response()->json(['message' => 'Assinatura criada com sucesso', 'subscription' => $subscription], Response::HTTP_OK);
     }
 
     /**
@@ -62,7 +62,7 @@ class SubscriptionController extends Controller
         $subscription = $this->subscription->findOrFail($id);
         $subscription->update($data);
 
-        return response()->json($subscription, Response::HTTP_OK);
+        return response()->json(['message' => 'Assinatura atualizada com sucesso', 'subscription' => $subscription], Response::HTTP_OK);
     }
 
     /**
@@ -73,6 +73,6 @@ class SubscriptionController extends Controller
         $subscription = $this->subscription->findOrFail($id);
         $subscription->delete();
 
-        return response()->json([], Response::HTTP_NO_CONTENT);
+        return response()->json(['message' => 'Assinatura cancelada com sucesso', 'subscription' => $subscription], Response::HTTP_NO_CONTENT);
     }
 }
