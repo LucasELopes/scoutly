@@ -4,17 +4,21 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\SubscriptionRequest;
 use App\Models\Subscription;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 
 class SubscriptionController extends Controller
 {
 
     private $subscription;
+    private $loggedUser;
 
     public function __construct(Subscription $subscription) {
         $this->subscription = $subscription;
+        $this->loggedUser = auth()->user();
     }
 
     /**
@@ -51,7 +55,12 @@ class SubscriptionController extends Controller
     public function show(String $id): JsonResponse
     {
         $subscription = $this->subscription->findOrFail($id);
-        return response()->json($subscription, Response::HTTP_OK);
+
+        if($this->loggedUser->id === $subscription->user_id || $this->loggedUser->role === User::USER_ADMIN) {
+            return response()->json(['message' => 'Inscrição encontrada.', 'subscription' => $subscription], Response::HTTP_OK);
+        }
+
+        return response()->json(['error' => 'Acesso não autorizado'], Response::HTTP_FORBIDDEN);
     }
 
     /**
@@ -61,9 +70,13 @@ class SubscriptionController extends Controller
     {
         $data = $request->validated();
         $subscription = $this->subscription->findOrFail($id);
-        $subscription->update($data);
 
-        return response()->json(['message' => 'Assinatura atualizada com sucesso', 'subscription' => $subscription], Response::HTTP_OK);
+        if($this->loggedUser->id === $subscription->user_id || $this->loggedUser->role === User::USER_ADMIN) {
+            $subscription->update($data);
+            return response()->json(['message' => 'Assinatura atualizada com sucesso', 'subscription' => $subscription], Response::HTTP_OK);
+        }
+
+        return response()->json(['error' => 'Acesso não autorizado'], Response::HTTP_FORBIDDEN);
     }
 
     /**
@@ -72,8 +85,12 @@ class SubscriptionController extends Controller
     public function destroy(String $id): JsonResponse
     {
         $subscription = $this->subscription->findOrFail($id);
-        $subscription->delete();
 
-        return response()->json(['message' => 'Assinatura cancelada com sucesso', 'subscription' => $subscription], Response::HTTP_OK);
+        if($this->loggedUser->id === $subscription->user_id || $this->loggedUser->role === User::USER_ADMIN) {
+            $subscription->delete();
+            return response()->json(['message' => 'Assinatura cancelada com sucesso', 'subscription' => $subscription], Response::HTTP_OK);
+        }
+
+        return response()->json(['error' => 'Acesso não autorizado'], Response::HTTP_FORBIDDEN);
     }
 }
