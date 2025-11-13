@@ -31,7 +31,7 @@ class ProductController extends Controller
             ->when($request->has('desired_price'), fn ($query) => $query->orWhere('desired_price', 'like', "%{$request['desired_price']}%"))
             ->when($request->has('active_until'), fn ($query) => $query->orWhere('active_until', 'like', "%{$request['active_until']}%"))
             ->orderBy('created_at', 'desc')
-            ->with('user')
+            ->with(['user', 'price_histories'])
             ->paginate((int) $request->per_page);
 
         return response()->json($product, Response::HTTP_OK);
@@ -53,7 +53,7 @@ class ProductController extends Controller
      */
     public function show(String $id): JsonResponse
     {
-        $product = $this->product->findOrFail($id);
+        $product = $this->product->with(['user', 'price_histories'])->findOrFail($id);
         if($this->loggedUser->id === $product->user_id || $this->loggedUser->role === User::USER_ADMIN) {
             return response()->json(['message' => 'Produto encontrado', 'product' => $product], Response::HTTP_OK);
         }

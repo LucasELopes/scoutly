@@ -18,9 +18,20 @@ class Product extends Model
         'desired_price'
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'desired_price' => 'double',
+        ];
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id', 'id');
+    }
+
+    public function price_histories() {
+        return $this->hasMany(PriceHistory::class, 'product_id', 'id');
     }
 
 }
