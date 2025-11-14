@@ -9,16 +9,15 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 class SubscriptionController extends Controller
 {
 
     private $subscription;
-    private $loggedUser;
 
     public function __construct(Subscription $subscription) {
         $this->subscription = $subscription;
-        $this->loggedUser = auth()->user();
     }
 
     /**
@@ -26,6 +25,8 @@ class SubscriptionController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
+        Gate::authorize('viewAny', Subscription::class);
+
         $subscription = $this->subscription->query()
         ->when($request->has('name'), fn ($query) => $query->orWhere('name', 'like', "%{$request['name']}%"))
         ->when($request->has('email'), fn ($query) => $query->orWhere('email', 'like', "%{$request['email']}%"))
@@ -56,11 +57,9 @@ class SubscriptionController extends Controller
     {
         $subscription = $this->subscription->findOrFail($id);
 
-        if($this->loggedUser->id === $subscription->user_id || $this->loggedUser->role === User::USER_ADMIN) {
-            return response()->json(['message' => 'Inscrição encontrada.', 'subscription' => $subscription], Response::HTTP_OK);
-        }
+        Gate::authorize('view', $subscription);
 
-        return response()->json(['error' => 'Acesso não autorizado'], Response::HTTP_FORBIDDEN);
+        return response()->json(['message' => 'Inscrição encontrada.', 'subscription' => $subscription], Response::HTTP_OK);
     }
 
     /**
@@ -71,12 +70,10 @@ class SubscriptionController extends Controller
         $data = $request->validated();
         $subscription = $this->subscription->findOrFail($id);
 
-        if($this->loggedUser->id === $subscription->user_id || $this->loggedUser->role === User::USER_ADMIN) {
-            $subscription->update($data);
-            return response()->json(['message' => 'Assinatura atualizada com sucesso', 'subscription' => $subscription], Response::HTTP_OK);
-        }
+        Gate::authorize('update', $subscription);
 
-        return response()->json(['error' => 'Acesso não autorizado'], Response::HTTP_FORBIDDEN);
+        $subscription->update($data);
+        return response()->json(['message' => 'Assinatura atualizada com sucesso', 'subscription' => $subscription], Response::HTTP_OK);
     }
 
     /**
@@ -86,11 +83,9 @@ class SubscriptionController extends Controller
     {
         $subscription = $this->subscription->findOrFail($id);
 
-        if($this->loggedUser->id === $subscription->user_id || $this->loggedUser->role === User::USER_ADMIN) {
-            $subscription->delete();
-            return response()->json(['message' => 'Assinatura cancelada com sucesso', 'subscription' => $subscription], Response::HTTP_OK);
-        }
+        Gate::authorize('delete', $subscription);
 
-        return response()->json(['error' => 'Acesso não autorizado'], Response::HTTP_FORBIDDEN);
+        $subscription->delete();
+        return response()->json(['message' => 'Assinatura cancelada com sucesso', 'subscription' => $subscription], Response::HTTP_OK);
     }
 }
