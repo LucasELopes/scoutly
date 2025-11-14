@@ -14,7 +14,7 @@ Route::post('/login', [AuthenticatedTokenController::class, 'store']);
 Route::middleware(['auth:sanctum'])->group(function() {
     Route::post('/logout', [AuthenticatedTokenController::class, 'destroy'])->middleware('auth:sanctum');
 
-    Route::apiResource('/products', ProductController::class)->except('index');
+    Route::apiResource('/products', ProductController::class);
     Route::apiResource('/subscriptions', SubscriptionController::class);
     Route::apiResource('/price-histories', PriceHistoryController::class)->except('index');
 
@@ -22,7 +22,6 @@ Route::middleware(['auth:sanctum'])->group(function() {
     Route::middleware(['can:admin'])->group(function () {
         Route::apiResource('/users', UserController::class);
 
-        Route::get('/products', [ProductController::class, 'index']);
         Route::get('/price-histories', [PriceHistoryController::class, 'index']);
     });
 

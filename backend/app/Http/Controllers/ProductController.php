@@ -8,16 +8,15 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Gate;
 
 class ProductController extends Controller
 {
 
     private $product;
-    private $loggedUser;
 
     public function __construct(Product $product) {
         $this->product = $product;
-        $this->loggedUser = auth()->user();
     }
 
     /**
@@ -25,6 +24,8 @@ class ProductController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
+        Gate::authorize('viewAny', Product::class);
+
         $product = $this->product->query()
             ->when($request->has('name'), fn ($query) => $query->orWhere('name', 'like', "%{$request['name']}%"))
             ->when($request->has('url'), fn ($query) => $query->orWhere('url', 'like', "%{$request['url']}%"))
@@ -54,11 +55,10 @@ class ProductController extends Controller
     public function show(String $id): JsonResponse
     {
         $product = $this->product->with(['user', 'price_histories'])->findOrFail($id);
-        if($this->loggedUser->id === $product->user_id || $this->loggedUser->role === User::USER_ADMIN) {
-            return response()->json(['message' => 'Produto encontrado', 'product' => $product], Response::HTTP_OK);
-        }
 
-        return response()->json(['error' => 'Acesso não autorizado'], Response::HTTP_FORBIDDEN);
+        Gate::authorize('view', $product);
+
+        return response()->json(['message' => 'Produto encontrado', 'product' => $product], Response::HTTP_OK);
     }
 
     /**
@@ -69,12 +69,10 @@ class ProductController extends Controller
         $data = $request->validated();
         $product = $this->product->findOrFail($id);
 
-        if($this->loggedUser->id === $product->user_id || $this->loggedUser->role === User::USER_ADMIN) {
-            $product->update($data);
-            return response()->json(['message' => 'Produto atualizado com sucesso', 'product' => $product], Response::HTTP_OK);
-        }
+        Gate::authorize('update', $product);
 
-        return response()->json(['error' => 'Acesso não autorizado'], Response::HTTP_FORBIDDEN);
+        $product->update($data);
+        return response()->json(['message' => 'Produto atualizado com sucesso', 'product' => $product], Response::HTTP_OK);
     }
 
     /**
@@ -84,11 +82,9 @@ class ProductController extends Controller
     {
         $product = $this->product->findOrFail($id);
 
-        if($this->loggedUser->id === $product->user_id || $this->loggedUser->role === User::USER_ADMIN) {
-            $product->delete();
-            return response()->json(['message' => 'Produto removido com sucesso', 'product' => $product], Response::HTTP_OK);
-        }
+        Gate::authorize('delete', $product);
 
-        return response()->json(['error' => 'Acesso não autorizado'], Response::HTTP_FORBIDDEN);
+        $product->delete();
+        return response()->json(['message' => 'Produto removido com sucesso', 'product' => $product], Response::HTTP_OK);
     }
 }
