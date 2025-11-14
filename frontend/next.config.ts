@@ -1,7 +1,9 @@
-import type { NextConfig } from "next";
+/** @type {import('next').NextConfig} */
 
-const nextConfig: NextConfig = {
-  /* config options here */
-};
+const nextConfig = {
+  images: {
+    domains: [process.env.NEXT_PUBLIC_API_DOMAIN, 'via.placeholder.com'],
+  },
+}
 
-export default nextConfig;
+export default nextConfig
