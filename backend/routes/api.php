@@ -12,6 +12,12 @@ Route::post('/login', [AuthenticatedTokenController::class, 'store']);
 
 // Rotas do usuários logados
 Route::middleware(['auth:sanctum'])->group(function() {
+
+    // Retorna as informações do usuário autenticado.
+    Route::get('/profile', function () {
+        return response()->json(auth()->user());
+    });
+
     Route::post('/logout', [AuthenticatedTokenController::class, 'destroy'])->middleware('auth:sanctum');
 
     // Principais rotas
