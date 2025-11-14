@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Gate;
 
 class PriceHistoryController extends Controller
 {
@@ -25,6 +26,9 @@ class PriceHistoryController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
+
+        Gate::authorize('viewAny', PriceHistory::class);
+
         $priceHistory = $this->priceHistory->query()
             ->when($request->has('product_id'), fn ($query) => $query->orWhere('product_id', 'like', "%{$request['product_id']}%"))
             ->when($request->has('price'), fn ($query) => $query->orWhere('price', 'like', "%{$request['price']}%"))
@@ -54,11 +58,9 @@ class PriceHistoryController extends Controller
     {
         $priceHistory = $this->priceHistory->with('product')->findOrFail($id);
 
-        if($this->loggedUser->id === $priceHistory->product->user_id || $this->loggedUser->role === User::USER_ADMIN) {
-            return response()->json(['message' => 'Preço encontrado', 'priceHistory' => $priceHistory], Response::HTTP_OK);
-        }
+        Gate::authorize('view', $priceHistory);
 
-        return response()->json(['error' => 'Acesso não autorizado'], Response::HTTP_FORBIDDEN);
+        return response()->json(['message' => 'Preço encontrado', 'priceHistory' => $priceHistory], Response::HTTP_OK);
     }
 
     /**
@@ -69,12 +71,10 @@ class PriceHistoryController extends Controller
         $data = $request->validated();
         $priceHistory = $this->priceHistory->with('product')->findOrFail($id);
 
-        if($this->loggedUser->id === $priceHistory->product->user_id || $this->loggedUser->role === User::USER_ADMIN) {
-            $priceHistory->update($data);
-            return response()->json(['message' => 'Preço atualizado com sucesso', 'priceHistory' => $priceHistory], Response::HTTP_OK);
-        }
+        Gate::authorize('update', $priceHistory);
 
-        return response()->json(['error' => 'Acesso não autorizado'], Response::HTTP_FORBIDDEN);
+        $priceHistory->update($data);
+        return response()->json(['message' => 'Preço atualizado com sucesso', 'priceHistory' => $priceHistory], Response::HTTP_OK);
     }
 
     /**
@@ -84,11 +84,9 @@ class PriceHistoryController extends Controller
     {
         $priceHistory = $this->priceHistory->with('product')->findOrFail($id);
 
-        if($this->loggedUser->id === $priceHistory->product->user_id || $this->loggedUser->role === User::USER_ADMIN) {
-            $priceHistory->delete();
-            return response()->json(['message' => 'Preço removido com sucesso', 'priceHistory' => $priceHistory], Response::HTTP_OK);
-        }
+        Gate::authorize('delete', $priceHistory);
 
-        return response()->json(['error' => 'Acesso não autorizado'], Response::HTTP_FORBIDDEN);
+        $priceHistory->delete();
+        return response()->json(['message' => 'Preço removido com sucesso', 'priceHistory' => $priceHistory], Response::HTTP_OK);
     }
 }
